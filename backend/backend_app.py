@@ -36,21 +36,42 @@ def add_post():
 
 
 def find_post_by_id(id):
+    #post = next((p for p in POSTS if p["id"] == id), None)
     for post in POSTS:
         if post["id"] == id:
             return post
-        else:
-            return None
+    return None
 
 
-@app.route('/api/posts/<post_id>', methods = ['DELETE'])
+@app.route('/api/posts/<int:post_id>', methods = ['DELETE'])
 def delete_post(post_id):
     post_to_be_deleted = find_post_by_id(post_id)
-    if post_to_be_deleted:
-        POSTS.remove(find_post_by_id(post_id))
-        return jsonify({"message": "Post with id <id> has been deleted successfully."}, 200)
-    else:
-        return jsonify({"message": "Post with id <id> does not exist."}, 400)
+    if not post_to_be_deleted:
+        return jsonify({"message": f"Post with id {post_id} does not exist."}), 400
+
+    POSTS.remove(find_post_by_id(post_id))
+
+    return jsonify({"message": f"Post with id {post_id} has been deleted successfully."}), 200
+
+
+
+@app.route('/api/posts/<int:post_id>', methods=['PUT'])
+def update_post(post_id):
+    post = find_post_by_id(post_id)
+
+    if not post:
+        return jsonify({"error": "Post not found"}), 404
+
+    updated_post = request.get_json()
+
+    if "title" in  updated_post:
+        post["title"] = updated_post["title"]
+
+    if "content" in  updated_post:
+        post["content"] = updated_post["content"]
+
+    return jsonify(post),200
+
 
 
 if __name__ == '__main__':

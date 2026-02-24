@@ -15,18 +15,26 @@ POSTS = [
 
 @app.route('/api/posts', methods=['GET'])
 def get_posts():
-    """Returns all posts"""
+    """Returns all posts if Query parameters
+    sor and direction are not provided. Otherwise returns posts
+    based on sort and direction"""
+
     posts = POSTS.copy()
     sort = request.args.get('sort')
     direction = request.args.get('direction')
 
-    if sort == "title":
-        if direction == 'desc':
-            sorted_posts = sorted(posts, key=lambda x:x['title'].lower(), reverse=(direction == 'desc'))
+    if not sort and not direction:
+        return jsonify(posts), 200
 
-    elif sort == 'content':
-        if direction == 'desc':
-            posts = sorted(posts, key=lambda x: x['content'].lower(), reverse=(direction == 'desc'))
+    if not sort or not direction:
+        return jsonify({
+            "error": "Both 'sort' and 'direction' must be provided together"}), 400
+
+    posts = sorted(
+        posts,
+        key=lambda x: x[sort].lower(),
+        reverse=(direction == 'desc')
+    )
 
     return jsonify(posts)
 

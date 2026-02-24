@@ -28,7 +28,8 @@ function loadPosts() {
                 const postDiv = document.createElement('div');
                 postDiv.className = 'post';
                 postDiv.innerHTML = `<h2>${post.title}</h2><p>${post.content}</p>
-                <button onclick="deletePost(${post.id})">Delete</button>`;
+                <button onclick="deletePost(${post.id})">Delete</button>
+                <button onclick="editPost(${post.id})">Update</button>  `;
                 postContainer.appendChild(postDiv);
             });
         })
@@ -69,4 +70,29 @@ function deletePost(postId) {
         loadPosts(); // Reload the posts after deleting one
     })
     .catch(error => console.error('Error:', error));  // If an error occurs, log it to the console
+}
+
+
+// Function to send PUT request to the API to update a post
+function editPost(postId) {
+    var newTitle = prompt("Enter new title:");
+    var newContent = prompt("Enter new content:");
+
+     let updatedData = {};
+
+     if (newTitle !== null) updatedData.title = newTitle;
+     if (newContent !== null) updatedData.content = newContent;
+
+     if (Object.keys(updatedData).length === 0) return;
+
+    fetch(document.getElementById('api-base-url').value + '/posts/' + postId, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedData)
+    })
+    .then(res => res.json())
+    .then(updatedPost => {
+        console.log('Updated:', updatedPost);
+        loadPosts();
+    });
 }

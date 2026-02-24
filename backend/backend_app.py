@@ -12,7 +12,22 @@ POSTS = [
 
 @app.route('/api/posts', methods=['GET'])
 def get_posts():
-    return jsonify(POSTS)
+    """Returns all posts"""
+    posts = POSTS.copy()
+    sort = request.args.get('sort')
+    direction = request.args.get('direction')
+
+    if sort == "title":
+        if direction == 'desc':
+            sorted_posts = sorted(posts, key=lambda x:x['title'].lower(), reverse=(direction == 'desc'))
+
+    elif sort == 'content':
+        if direction == 'desc':
+            posts = sorted(posts, key=lambda x: x['content'].lower(), reverse=(direction == 'desc'))
+
+    return jsonify(posts)
+
+
 
 
 def validate_post(post):
@@ -23,6 +38,8 @@ def validate_post(post):
 
 @app.route('/api/posts', methods=['POST'])
 def add_post():
+    """Create a new post"""
+
     new_post = request.get_json()
 
     if not validate_post(new_post):
@@ -45,6 +62,8 @@ def find_post_by_id(id):
 
 @app.route('/api/posts/<int:post_id>', methods = ['DELETE'])
 def delete_post(post_id):
+    """Deletes a post by id"""
+
     post_to_be_deleted = find_post_by_id(post_id)
     if not post_to_be_deleted:
         return jsonify({"message": f"Post with id {post_id} does not exist."}), 400
@@ -57,6 +76,8 @@ def delete_post(post_id):
 
 @app.route('/api/posts/<int:post_id>', methods=['PUT'])
 def update_post(post_id):
+    """Updates a post by id"""
+
     post = find_post_by_id(post_id)
 
     if not post:
@@ -64,10 +85,13 @@ def update_post(post_id):
 
     updated_post = request.get_json()
 
-    if "title" in  updated_post:
+    if updated_post is None:
+        return jsonify({"error": "No data provided"}), 400
+
+    if "title" in  updated_post and updated_post["title"] is not None:
         post["title"] = updated_post["title"]
 
-    if "content" in  updated_post:
+    if "content" in  updated_post and updated_post["content"] is not None:
         post["content"] = updated_post["content"]
 
     return jsonify(post),200

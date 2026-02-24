@@ -4,21 +4,201 @@
     "title": "Masterblog API",
     "version": "1.0.0"
   },
-  "servers": [{ "url": "http://localhost:5001" }],
-  "tags": [{ "name": "Post", "description": "Post API - CRUD" }],
-    "paths": {
-        "/api/posts": {
-            "get": {
-        "summary": "Returns all posts",
-        "produces": ["application/json"],
+  "host": "localhost:5002",
+  "basePath": "/api",
+  "schemes": ["http"],
+  "tags": [
+    { "name": "Post", "description": "Post API - CRUD" }
+  ],
+  "paths": {
+    "/posts": {
+      "get": {
         "tags": ["Post"],
+        "summary": "Returns all posts",
+        "description": "Retrieve all posts. Optional query parameters: `sort` (title/content), `direction` (asc/desc).",
+        "parameters": [
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Field to sort by (title or content)",
+            "required": false,
+            "type": "string",
+            "enum": ["title", "content"]
+          },
+          {
+            "name": "direction",
+            "in": "query",
+            "description": "Sort order (asc or desc)",
+            "required": false,
+            "type": "string",
+            "enum": ["asc", "desc"]
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Successful operation"
+            "description": "List of posts",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": { "type": "integer", "example": 1 },
+                  "title": { "type": "string", "example": "First post" },
+                  "content": { "type": "string", "example": "This is the first post." }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid query parameters",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": { "type": "string", "example": "Both 'sort' and 'direction' must be provided together" }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Post"],
+        "summary": "Create a new post",
+        "consumes": ["application/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Post object to create",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "required": ["title", "content"],
+              "properties": {
+                "title": { "type": "string", "example": "New Post" },
+                "content": { "type": "string", "example": "This is a new post." }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Post created successfully",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "post": {
+                  "type": "object",
+                  "properties": {
+                    "id": { "type": "integer", "example": 6 },
+                    "title": { "type": "string", "example": "New Post" },
+                    "content": { "type": "string", "example": "This is a new post." }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid post data",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": { "type": "string", "example": "Invalid post" }
+              }
+            }
           }
         }
       }
+    },
+    "/posts/{id}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "type": "integer",
+          "description": "ID of the post"
         }
+      ],
+      "put": {
+        "tags": ["Post"],
+        "summary": "Update a post by ID",
+        "consumes": ["application/json"],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Updated post data (title and/or content)",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "title": { "type": "string", "example": "Updated Title" },
+                "content": { "type": "string", "example": "Updated content." }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Post updated successfully" },
+          "400": { "description": "No data provided" },
+          "404": { "description": "Post not found" }
+        }
+      },
+      "delete": {
+        "tags": ["Post"],
+        "summary": "Delete a post by ID",
+        "responses": {
+          "200": { "description": "Post deleted successfully" },
+          "400": { "description": "Post does not exist" }
+        }
+      }
+    },
+    "/posts/search": {
+      "get": {
+        "tags": ["Post"],
+        "summary": "Search posts by title or content",
+        "parameters": [
+          {
+            "name": "title",
+            "in": "query",
+            "type": "string",
+            "required": false,
+            "description": "Title keyword to search"
+          },
+          {
+            "name": "content",
+            "in": "query",
+            "type": "string",
+            "required": false,
+            "description": "Content keyword to search"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Search results",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": { "type": "integer" },
+                  "title": { "type": "string" },
+                  "content": { "type": "string" }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "No query parameters provided",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "error": { "type": "string", "example": "No data provided" }
+              }
+            }
+          }
+        }
+      }
     }
+  }
 }
-

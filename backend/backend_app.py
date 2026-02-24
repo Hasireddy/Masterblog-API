@@ -5,9 +5,12 @@ app = Flask(__name__)
 CORS(app)  # This will enable CORS for all routes
 
 POSTS = [
-    {"id": 1, "title": "First post", "content": "This is the first post."},
-    {"id": 2, "title": "Second post", "content": "This is the second post."},
-]
+            {"id": 1, "title": "First post", "content": "This is the first post."},
+            {"id": 2, "title": "Second post", "content": "This is the second post."},
+            {"id": 3, "title": "Flask", "content": "This is the Flask Post."},
+            {"id": 4, "title": "Python", "content": "This is the Python post."},
+            {"id": 5, "title": "Flask API", "content": "This is the Flask API post."},
+        ]
 
 
 @app.route('/api/posts', methods=['GET'])
@@ -26,6 +29,27 @@ def get_posts():
             posts = sorted(posts, key=lambda x: x['content'].lower(), reverse=(direction == 'desc'))
 
     return jsonify(posts)
+
+
+
+@app.route('/api/posts/search', methods=['GET'])
+def search_posts():
+    """This function takes query parameters title
+    and content and returns posts where the title or
+    content contain the given search items"""
+
+    title = request.args.get('title')
+    content = request.args.get('content')
+
+    if not title and not content:
+        return jsonify({"error": "No data provided"}), 400
+
+    posts = POSTS.copy()
+
+    posts_searched = [post for post in posts if (title and title.lower() in post["title"].lower()) or
+                       (content and content.lower() in post["content"].lower())]
+
+    return jsonify(posts_searched)
 
 
 
